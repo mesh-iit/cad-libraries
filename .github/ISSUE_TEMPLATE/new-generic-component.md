@@ -1,36 +1,33 @@
 ---
 name: New generic component
-about: Request for new library components
-title: "[manufacturer] - [part number] - [short description]"
+about: Request for new library component(s)
+title: "[Alias, see table below] - [short description]"
 labels: libraries-request - GENERIC
 assignees: ''
 
 ---
 
-| Description          | Field                                  |
-|:---------------------|:---------------------------------------|
-| Datasheet component  | [link or attachment ]                  |
-| Project              | [where will the component be used]     |
-| Alias Creo           | [maker + code]                         |
-| IIT-Code             | [if available]                         |
-| Applicant            | Name Surname, @username                |
-| Supervisor           | Name Surname, @username                |
-| Maintainer           | Lorenzo Protopapa, @Lawproto           |
-| Coworkers            | @icub-tech-iit/silo-mech               |
-
-### Attachment:
-
+| Description            | Field                                          |
+|:-----------------------|:-----------------------------------------------|
+| Project                | [Intended project for the component]            |
+| Alias (file name)      | [Norm + measure] OR [manufacturer + code] [^1] |
+| Applicant              | Name Surname, @username                        |
+| Supervisor             | Name Surname, @username                        |
+| Maintainer             | Lorenzo Protopapa, @Lawproto                   |
+| Coworkers              | @icub-tech-iit/silo-mech                       |
 
 ### Notes:
 
-
 ### Checklist:
-Complete the checklist in order to proceed with the request.
+Complete the checklist in order to fulfill the request.
 
-- [ ] Created the Alias following [the standard convention](https://github.com/icub-tech-iit/cad-libraries/wiki/Mechanical-design-guidelines#commercial-components-coding-standard).
-- [ ] Added, if necessary, the source files (STEP, IGS, etc), the links/datasheets/drawings or other information used to create the library part.
-- [ ] File imported using the Creo [start part commercial](https://github.com/icub-tech-iit/cad-libraries/wiki/Mechanical-design-guidelines#standard-part-for-commercial-components).
-- [ ] Checked [mass properties](https://github.com/icub-tech-iit/cad-libraries/wiki/Mechanical-design-guidelines#mass-properties-of-commercial-parts).
-- [ ] Checked if one [special case](https://github.com/icub-tech-iit/cad-libraries/wiki/Mechanical-design-guidelines#special-cases-and-examples) applies to this component.
-- [ ] Converted the files with the [EDU-COM license](https://github.com/icub-tech-iit/cad-libraries/wiki/PTC-Creo-Guidelines#save-file-with-commercial-license).
-- [ ] Created IIT code in [WINGST](http://wingst.icub.iit.local/) with manufacturer and at least one supplier.
+- [ ] Create a new part file using the [start part commercial](https://github.com/icub-tech-iit/cad-libraries/wiki/Mechanical-design-guidelines#standard-part-for-commercial-components) Creo template.
+- [ ] Check if one [special case](https://github.com/icub-tech-iit/cad-libraries/wiki/Mechanical-design-guidelines#special-cases-and-examples) applies to this component.
+- [ ] If an external file like STEP, IGS, etc. needs to be imported to create the geometry of the part,  link that file in a new comment.
+- [ ] Create an IIT code in [WinGST](http://wingst.icub.iit.local/) with at least one manufacturer and related supplier.
+- [ ] If a datasheet with useful information is available, create a copy in a shared path and link it inside the IIT code in WinGST.
+- [ ] Assign [mass properties](https://github.com/icub-tech-iit/cad-libraries/wiki/Mechanical-design-guidelines#mass-properties-of-commercial-parts) to the part after measuring real life weight.[^2]
+- [ ] Convert the file with the [EDU to COM license](https://github.com/icub-tech-iit/cad-libraries/wiki/PTC-Creo-Guidelines#save-file-with-commercial-license).
+
+[^1]: For more details, see our [standard convention](https://github.com/icub-tech-iit/cad-libraries/wiki/Mechanical-design-guidelines#commercial-components-coding-standard) for Aliases.
+[^2]: For simple, uniform objects like bars, screws, bushings, etc. the proper material can be assigned instead.
