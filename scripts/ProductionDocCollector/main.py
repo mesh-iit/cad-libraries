@@ -18,7 +18,7 @@ from openpyxl import load_workbook
 
 VALID_EXTENSIONS = {".pdf", ".stp", ".step", ".stl"}
 
-OUTPUT_FOLDER_NAME = "Output"
+OUTPUT_FOLDER_NAME = "ProductionDocCollector_Output"
 
 # Colonne Excel attese. La ricerca e' tollerante a maiuscole/minuscole,
 # spazi e punto finale, quindi accetta ad esempio: Cod, Cod., COD.
@@ -53,7 +53,7 @@ def build_production_doc_path() -> Path:
 
     if not root.exists():
         raise FileNotFoundError(
-            f"Cartella IIT non trovata:\n{root}"
+            f"IIT folder not found:\n{root}"
         )
 
     matches = []
@@ -64,12 +64,12 @@ def build_production_doc_path() -> Path:
 
     if len(matches) == 0:
         raise FileNotFoundError(
-            "Nessuna cartella 'Production Doc' trovata."
+            "No 'Production Doc' folder found."
         )
 
     if len(matches) > 1:
         message = (
-            "Trovate più cartelle 'Production Doc':\n\n"
+            "More than one 'Production Doc' folder found:\n\n"
             + "\n".join(str(p) for p in matches)
         )
         raise RuntimeError(message)
@@ -169,8 +169,8 @@ def find_column_indexes(ws) -> Tuple[int, Optional[int]]:
 
     if cod_col is None:
         raise ValueError(
-            "Colonna obbligatoria non trovata. "
-            "Mi aspetto una colonna chiamata 'Cod.' oppure 'Cod'."
+            "Mandatory column not found. "
+            "I was expecting a column called 'Cod.' or 'Cod'."
         )
 
     return cod_col, optional_col
@@ -308,7 +308,7 @@ def reset_output_folder(output_path: Path) -> None:
 
         except Exception as exc:
             print(
-                f"WARNING: impossibile eliminare "
+                f"WARNING: impossible to eliminate "
                 f"'{item}': {exc}"
             )
 
@@ -368,7 +368,7 @@ def copy_found_files(
                 found_files_count += 1
             except Exception as exc:
                 warnings.append(
-                    f"Errore copiando '{source_file}' -> '{destination}': {exc}"
+                    f"Error copying '{source_file}' -> '{destination}': {exc}"
                 )
 
     return found_files_count, missing_codes, warnings
@@ -441,7 +441,13 @@ def run_process(excel_path: Path) -> Tuple[int, int, Path]:
             f"Expected path:\n{production_doc_path}"
         )
 
-    output_path = production_doc_path / OUTPUT_FOLDER_NAME
+    output_path = (
+        Path.home()
+        / "Documents"
+        / OUTPUT_FOLDER_NAME
+    )
+    
+    #output_path = production_doc_path / OUTPUT_FOLDER_NAME
 
     codes, excel_warnings = build_codes_from_excel(excel_path)
 
@@ -478,7 +484,7 @@ def main():
     root.withdraw()  # nasconde la finestra principale
 
     excel_file = filedialog.askopenfilename(
-        title="Seleziona file Excel",
+        title="Select Excel file",
         filetypes=[
             ("Excel files", "*.xlsx *.xlsm"),
             ("All files", "*.*"),
