@@ -39,7 +39,8 @@ search_path ".\libraries\fasteners"
 !
 ! ----------------------drawing format-----------------------------------------
 !
-search_path ".\config\proe_drawing_formats\deprecate_df"
+search_path ".\config\drawing_formats"
+search_path ".\config\drawing_formats\old"
 !
 !
 ! ----------------------all mechanical projects-----------------------------------------
