@@ -11,7 +11,7 @@ Then, it proceeds to generate the trail file needed for Creo to export those fil
 
 To generate the executable file, CMD in this folder, then input:
 
-`python -m PyInstaller --onefile --windowed --name ProductionDocCollector main.py`
+`python -m PyInstaller --onefile --windowed --name ProductionDocExporter main.py`
 
 __________________________
 
