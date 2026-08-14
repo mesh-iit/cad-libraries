@@ -51,7 +51,7 @@ format_setup_file .\config\std_fmt.dtl
 make_parameters_from_fmt_tables yes
 ! setting directory of standard configuration files
 pro_dtl_setup_dir .\config\
-pro_format_dir .\config\proe_drawing_formats
+pro_format_dir .\config\drawing_formats
 pro_symbol_dir .\config\symbols
 todays_date_note_format %dd-%Mmm-%yy
 ! set "select to keep" the default behaviour in the drawing environment
