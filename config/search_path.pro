@@ -181,6 +181,8 @@ search_path ".\..\cad-mechanics\projects\gadgets\ig_039_ecub_battery_charger"
 search_path ".\..\cad-mechanics\projects\gadgets\ig_040_bat_con_box"
 search_path ".\..\cad-mechanics\projects\gadgets\ig_041_test_bench_accessories"
 search_path ".\..\cad-mechanics\projects\gadgets\ig_042_emika_to_xhand1_adapter"
+search_path ".\..\cad-mechanics\projects\gadgets\ig_043_emika_to_V1leap_hand_adapter"
+search_path ".\..\cad-mechanics\projects\gadgets\ig_044_primi_project"
 
 
 ! ----------------------Jointlabs-----------------------------------------
