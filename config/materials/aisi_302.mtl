@@ -79,7 +79,7 @@ Src: matmatch'
 {
   Name = PTC_TENSILE_ULTIMATE_STRESS
   Type = Real
-  Default = 1.190000e+03 kPa
+  Default = 1.190000e+03 MPa
   Access = Full
 }
 
