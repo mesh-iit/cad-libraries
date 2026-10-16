@@ -4,21 +4,21 @@ ProductionDocExporter - main.py
 Generates a Creo auto_trail.txt from a missing.txt/list of codes.
 
 Workflow:
-1. Ask whether to use the default ProductionDocCollector missing.txt.
-2. Otherwise let the user select any .txt file.
-3. Let the user select the CAD source root folder.
-4. Clean/create: C:\\Users\\<user>\\Documents\\ProductionDocExporter_Output
-5. Parse codes from the input text.
-6. Search recursively for source files with Creo version suffix .1:
+1. Ask the user to select any .txt or .xlsx file.
+2. Let the user select the CAD source root folder.
+3. Clean/create: C:\\Users\\<user>\\Documents\\ProductionDocExporter_Output
+4. Parse codes from the input file.
+5. Search recursively for source files with Creo version suffix .1:
    CODE.prt.1, CODE.asm.1, CODE.drw.1
-7. Warn, but do not stop, if versions > .1 are found.
-8. Generate auto_trail.txt and report.txt.
+6. Warn, but do not stop, if versions > .1 are found.
+7. Generate auto_trail.txt and report.txt.
 
 The generated trail is meant to be launched manually from Creo.
 """
 
 from __future__ import annotations
 
+import pandas as pd
 import datetime as _dt
 import re
 import shutil
@@ -36,9 +36,9 @@ from tkinter import filedialog, messagebox
 # -----------------------------------------------------------------------------
 
 APP_NAME = "ProductionDocExporter"
-COLLECTOR_OUTPUT_DIRNAME = "ProductionDocCollector_Output"
+#COLLECTOR_OUTPUT_DIRNAME = "ProductionDocCollector_Output"
 EXPORTER_OUTPUT_DIRNAME = "ProductionDocExporter_Output"
-DEFAULT_MISSING_FILENAME = "missing.txt"
+#DEFAULT_MISSING_FILENAME = "missing.txt"
 TRAIL_FILENAME = "auto_trail.txt"
 REPORT_FILENAME = "report.txt"
 
@@ -48,8 +48,8 @@ CREO_TYPE_STL = "db_549"
 CREO_TYPE_PDF = "db_617"
 
 # General-purpose STL settings selected by Lorenzo.
-STL_CHORD_HEIGHT = "0.03"
-STL_ANGLE_CONTROL = "0.85"
+STL_CHORD_HEIGHT = "0.01"
+STL_ANGLE_CONTROL = "1.0"
 
 # Object code pattern examples:
 #   IC_099_P_004_REV_0
@@ -115,8 +115,8 @@ def documents_dir() -> Path:
     return Path.home() / "Documents"
 
 
-def default_missing_path() -> Path:
-    return documents_dir() / COLLECTOR_OUTPUT_DIRNAME / DEFAULT_MISSING_FILENAME
+#def default_missing_path() -> Path:
+#    return documents_dir() / COLLECTOR_OUTPUT_DIRNAME / DEFAULT_MISSING_FILENAME
 
 
 def exporter_output_dir() -> Path:
@@ -145,6 +145,56 @@ def read_text_file(path: Path) -> str:
             last_exc = exc
     raise RuntimeError(f"Could not read text file: {path}\nLast error: {last_exc}")
 
+# This function parses the Excel file in MWS format 
+# also looks for possible inserted groups and appends the revision where needed     
+def read_xlsx_file(path: Path) -> str:
+    pieces = []
+
+    workbook = pd.ExcelFile(
+        path,
+        engine="openpyxl"
+    )
+
+    rev_pattern = re.compile(r"_REV_([A-Z0-9]+)$", re.IGNORECASE)
+    code_pattern = re.compile(
+        r"[A-Z][A-Z0-9]*_\d{3}_[A-Z]_\d{3}(?:_REV_[A-Z0-9]+)?",
+        re.IGNORECASE
+    )
+
+    for sheet in workbook.sheet_names:
+        df = pd.read_excel(
+            path,
+            sheet_name=sheet,
+            header=None,
+            dtype=str,
+            engine="openpyxl"
+        )
+
+        for _, row in df.fillna("").iterrows():
+
+            row_values = [str(v).strip() for v in row if str(v).strip()]
+
+            # Cerca una revisione disponibile nella riga
+            inherited_rev = None
+
+            for value in row_values:
+                m = rev_pattern.search(value)
+                if m:
+                    inherited_rev = m.group(1)
+                    break
+
+            # Aggiunge tutti i valori della riga
+            # Se un codice non ha REV e la riga ne contiene una,
+            # la eredita automaticamente
+            for value in row_values:
+
+                if inherited_rev and code_pattern.fullmatch(value):
+                    if "_REV_" not in value.upper():
+                        value = f"{value}_REV_{inherited_rev}"
+
+                pieces.append(value)
+
+    return "\n".join(pieces)
 
 # -----------------------------------------------------------------------------
 # Input parsing
@@ -172,6 +222,35 @@ def parse_requested_codes(text: str) -> List[RequestedCode]:
 
     return codes
 
+# Parse non-mirrored counterpart for mirrored components
+def expand_mirror_codes(
+    codes: List[RequestedCode]
+) -> List[RequestedCode]:
+    expanded = []
+    seen = set()
+
+    for code in codes:
+
+        key = code.output_stem
+
+        if key not in seen:
+            expanded.append(code)
+            seen.add(key)
+
+        if "_M_" in code.base:
+
+            mirrored = RequestedCode(
+                base=code.base.replace("_M_", "_P_"),
+                revision=code.revision
+            )
+
+            mirror_key = mirrored.output_stem
+
+            if mirror_key not in seen:
+                expanded.append(mirrored)
+                seen.add(mirror_key)
+
+    return expanded
 
 # -----------------------------------------------------------------------------
 # Source indexing and search
@@ -483,31 +562,20 @@ def generate_report(
 
 
 def ask_input_file(root: tk.Tk) -> Optional[Path]:
-    default_path = default_missing_path()
-
-    use_default = messagebox.askyesno(
-        APP_NAME,
-        "Should I use the default path for the missing.txt file?\n\n"
-        f"{default_path}",
-        parent=root,
-    )
-
-    if use_default:
-        if default_path.exists():
-            return default_path
-        messagebox.showwarning(
-            APP_NAME,
-            "Default missing.txt not found.\n\nPlease select a TXT file manually.",
-            parent=root,
-        )
-
     selected = filedialog.askopenfilename(
-        title="Select input TXT file",
-        filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
+        title="Select input TXT or XLSX file",
+        filetypes=[
+            ("Input files", "*.txt *.xlsx"),
+            ("Text files", "*.txt"),
+            ("Excel files", "*.xlsx"),
+            ("All files", "*.*"),
+        ],
         parent=root,
     )
+
     if not selected:
         return None
+
     return Path(selected)
 
 
@@ -542,8 +610,17 @@ def run() -> int:
             messagebox.showerror(APP_NAME, f"Invalid CAD root folder:\n{cad_root}", parent=root)
             return 1
 
-        input_text = read_text_file(input_file)
+        # Check whether it is a text or an Excel file
+        if input_file.suffix.lower() == ".xlsx":
+            input_text = read_xlsx_file(input_file)
+        else:
+            input_text = read_text_file(input_file)
+        
+        
         requested_codes = parse_requested_codes(input_text)
+        # Additions for mirror codes
+        requested_codes = expand_mirror_codes(requested_codes)
+        
         if not requested_codes:
             messagebox.showerror(
                 APP_NAME,
@@ -554,6 +631,12 @@ def run() -> int:
 
         out_dir = exporter_output_dir()
         clean_output_dir(out_dir)
+        # Also copy input file in output folder
+        copied_input = out_dir / input_file.name
+        shutil.copy2(
+            input_file,
+            copied_input
+        )
 
         index = build_source_index(cad_root)
         plan = [ExportPlanItem(code=c, sources=find_sources_for_code(c, index)) for c in requested_codes]
